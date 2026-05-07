@@ -14,6 +14,7 @@ import Reveal from '../components/animations/Reveal';
 import StatusCard from '../components/cards/StatusCard';
 import CarScene from '../components/vehicle/CarScene';
 import HealthChart from '../components/charts/HealthChart';
+import AIAssistant from '../components/ai/AIAssistant';
 
 type VehicleData = {
   model: string;
@@ -357,6 +358,17 @@ export default function Home() {
           delay={0.7}
           className="col-span-2"
         >
+          <Reveal
+  delay={0.7}
+  className="col-span-2"
+>
+  <AIAssistant
+    healthScore={healthScore}
+    fuelCost={monthlyFuelCost}
+    oilRemainingKm={oilRemainingKm}
+    revisionRemainingKm={revisionRemainingKm}
+  />
+</Reveal>
           <HealthChart />
         </Reveal>
 

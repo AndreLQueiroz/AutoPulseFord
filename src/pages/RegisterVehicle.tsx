@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Car } from 'lucide-react';
 
+import { useVehicle } from '../context/useVehicle';
+
 export type VehicleData = {
   model: string;
   year: string;
@@ -26,25 +28,16 @@ const initialVehicle: VehicleData = {
   lastTireChangeKm: '',
 };
 
-function getSavedVehicle(): VehicleData {
-  const savedVehicle =
-    localStorage.getItem('autopulse_vehicle');
-
-  if (!savedVehicle) {
-    return initialVehicle;
-  }
-
-  return {
-    ...initialVehicle,
-    ...JSON.parse(savedVehicle),
-  };
-}
-
 export default function RegisterVehicle() {
   const navigate = useNavigate();
 
+  const { vehicle: savedVehicle, saveVehicle } =
+    useVehicle();
+
   const [vehicle, setVehicle] =
-    useState<VehicleData>(() => getSavedVehicle());
+    useState<VehicleData>(
+      savedVehicle || initialVehicle
+    );
 
   function handleChange(
     field: keyof VehicleData,
@@ -57,10 +50,7 @@ export default function RegisterVehicle() {
   }
 
   function handleSave() {
-    localStorage.setItem(
-      'autopulse_vehicle',
-      JSON.stringify(vehicle)
-    );
+    saveVehicle(vehicle);
 
     navigate('/');
   }

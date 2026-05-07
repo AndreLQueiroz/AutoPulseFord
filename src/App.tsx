@@ -6,6 +6,8 @@ import Expenses from './pages/Expenses';
 import Assistant from './pages/Assistant';
 import Alerts from './pages/Alerts';
 import RegisterVehicle from './pages/RegisterVehicle';
+import AddFuel from './pages/AddFuel';
+import FuelHistory from './pages/FuelHistory';
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/register" element={<RegisterVehicle />} />
+          <Route path="/add-fuel" element={<AddFuel />} />
+          <Route path="/fuel-history" element={<FuelHistory />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
