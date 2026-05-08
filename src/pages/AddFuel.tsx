@@ -2,40 +2,26 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Fuel, Save } from 'lucide-react';
 
-type FuelRecord = {
-  currentKm: string;
-  liters: string;
-  totalPrice: string;
-  consumption: number;
-  createdAt: string;
-};
+import { useVehicle } from '../context/useVehicle';
+import type { FuelRecord } from '../context/vehicle-context';
 
 export default function AddFuel() {
   const navigate = useNavigate();
+  const { fuelHistory, addFuelRecord } = useVehicle();
 
   const [currentKm, setCurrentKm] = useState('');
   const [liters, setLiters] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
-  
 
   function handleSave() {
     const km = Number(currentKm);
     const fuelLiters = Number(liters);
 
-    const savedHistory =
-      localStorage.getItem('autopulse_fuel_history');
-
-    const history: FuelRecord[] = savedHistory
-      ? JSON.parse(savedHistory)
-      : [];
-
     let consumption = 0;
 
-    if (history.length > 0) {
-      const lastRecord = history[history.length - 1];
-
+    if (fuelHistory.length > 0) {
+      const lastRecord = fuelHistory[fuelHistory.length - 1];
       const lastKm = Number(lastRecord.currentKm);
-
       const distance = km - lastKm;
 
       if (fuelLiters > 0) {
@@ -51,13 +37,7 @@ export default function AddFuel() {
       createdAt: new Date().toISOString(),
     };
 
-    history.push(newRecord);
-
-    localStorage.setItem(
-      'autopulse_fuel_history',
-      JSON.stringify(history)
-    );
-
+    addFuelRecord(newRecord);
     navigate('/fuel-history');
   }
 
@@ -82,9 +62,7 @@ export default function AddFuel() {
       <div className="space-y-4">
         <input
           value={currentKm}
-          onChange={(e) =>
-            setCurrentKm(e.target.value)
-          }
+          onChange={(e) => setCurrentKm(e.target.value)}
           type="number"
           placeholder="Km atual"
           className="w-full rounded-2xl border border-white/10 bg-[#111827] px-4 py-4 text-white outline-none"
@@ -92,9 +70,7 @@ export default function AddFuel() {
 
         <input
           value={liters}
-          onChange={(e) =>
-            setLiters(e.target.value)
-          }
+          onChange={(e) => setLiters(e.target.value)}
           type="number"
           placeholder="Litros abastecidos"
           className="w-full rounded-2xl border border-white/10 bg-[#111827] px-4 py-4 text-white outline-none"
@@ -102,9 +78,7 @@ export default function AddFuel() {
 
         <input
           value={totalPrice}
-          onChange={(e) =>
-            setTotalPrice(e.target.value)
-          }
+          onChange={(e) => setTotalPrice(e.target.value)}
           type="number"
           placeholder="Valor total"
           className="w-full rounded-2xl border border-white/10 bg-[#111827] px-4 py-4 text-white outline-none"

@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { Bell, Bot, Car, Fuel, HeartPulse } from 'lucide-react';
+import {Bell, Bot,Car,Fuel,Gauge,} from 'lucide-react';
 
 const items = [
   { path: '/', label: 'Início', icon: Car },
-  { path: '/health', label: 'Saúde', icon: HeartPulse },
+  { path: '/health', label: 'Drive', icon: Gauge },
   { path: '/expenses', label: 'Gastos', icon: Fuel },
   { path: '/assistant', label: 'Assistente', icon: Bot },
   { path: '/alerts', label: 'Alertas', icon: Bell },

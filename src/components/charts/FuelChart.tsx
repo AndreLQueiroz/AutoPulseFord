@@ -7,27 +7,14 @@ import {
   CartesianGrid,
 } from 'recharts';
 
-type FuelRecord = {
-  currentKm: string;
-  liters: string;
-  totalPrice: string;
-  consumption: number;
-  createdAt: string;
+import type { FuelRecord } from '../../context/vehicle-context';
+
+type Props = {
+  fuelHistory: FuelRecord[];
 };
 
-function getFuelHistory(): FuelRecord[] {
-  const saved =
-    localStorage.getItem('autopulse_fuel_history');
-
-  if (!saved) return [];
-
-  return JSON.parse(saved);
-}
-
-export default function FuelChart() {
-  const history = getFuelHistory();
-
-  const chartData = history.map((item, index) => ({
+export default function FuelChart({ fuelHistory }: Props) {
+  const chartData = fuelHistory.map((item, index) => ({
     name: `#${index + 1}`,
     consumo: Number(item.consumption.toFixed(1)),
   }));
@@ -44,44 +31,44 @@ export default function FuelChart() {
         </p>
       </div>
 
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#1E293B"
-            />
+      {chartData.length === 0 ? (
+        <div className="flex h-72 items-center justify-center rounded-2xl bg-white/5 text-center text-sm text-slate-400">
+          Nenhum dado suficiente para gerar o gráfico.
+        </div>
+      ) : (
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
 
-            <XAxis
-              dataKey="name"
-              stroke="#64748B"
-            />
+              <XAxis dataKey="name" stroke="#64748B" />
 
-            <Tooltip
-              contentStyle={{
-                background: '#0F172A',
-                border: '1px solid #1E293B',
-                borderRadius: '16px',
-                color: '#fff',
-              }}
-            />
+              <Tooltip
+                contentStyle={{
+                  background: '#0F172A',
+                  border: '1px solid #1E293B',
+                  borderRadius: '16px',
+                  color: '#fff',
+                }}
+              />
 
-            <Line
-              type="monotone"
-              dataKey="consumo"
-              stroke="#0A84FF"
-              strokeWidth={4}
-              dot={{
-                r: 5,
-                fill: '#0A84FF',
-              }}
-              activeDot={{
-                r: 8,
-              }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+              <Line
+                type="monotone"
+                dataKey="consumo"
+                stroke="#0A84FF"
+                strokeWidth={4}
+                dot={{
+                  r: 5,
+                  fill: '#0A84FF',
+                }}
+                activeDot={{
+                  r: 8,
+                }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

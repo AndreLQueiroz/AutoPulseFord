@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useVehicle } from '../context/useVehicle';
 import { motion } from 'framer-motion';
+
 import {
   Bell,
   ChevronDown,
@@ -15,18 +16,9 @@ import StatusCard from '../components/cards/StatusCard';
 import CarScene from '../components/vehicle/CarScene';
 import HealthChart from '../components/charts/HealthChart';
 import AIAssistant from '../components/ai/AIAssistant';
+import FordInsightsCard from '../components/ford/FordInsightsCard';
 
-type VehicleData = {
-  model: string;
-  year: string;
-  currentKm: string;
-  averageConsumption: string;
-  monthlyKm: string;
-  fuelPrice: string;
-  lastOilChangeKm: string;
-  lastRevisionKm: string;
-  lastTireChangeKm: string;
-};
+import { calculateVehicleScore } from '../utils/vehicleScore';
 
 type StatusType = 'ok' | 'warning' | 'danger';
 
@@ -47,22 +39,12 @@ function getStatusByRemainingKm(
   return 'ok';
 }
 
-function getSavedVehicle(): VehicleData | null {
-  const savedVehicle =
-    localStorage.getItem('autopulse_vehicle');
-
-  if (!savedVehicle) {
-    return null;
-  }
-
-  return JSON.parse(savedVehicle) as VehicleData;
-}
-
 export default function Home() {
-  const [vehicle] =
-    useState<VehicleData | null>(() => getSavedVehicle());
+  const { vehicle } = useVehicle();
 
-  const currentKm = Number(vehicle?.currentKm || 12500);
+  const currentKm = Number(
+    vehicle?.currentKm || 12500
+  );
 
   const monthlyKm = Number(
     vehicle?.monthlyKm || 800
@@ -120,48 +102,37 @@ export default function Home() {
         fuelPrice
       : 0;
 
-  const problems = [
-    oilStatus === 'danger'
-      ? 25
-      : oilStatus === 'warning'
-        ? 10
-        : 0,
+  const vehicleScore =
+    calculateVehicleScore({
+      averageConsumption,
+      fordAverageConsumption: 9.55,
 
-    revisionStatus === 'danger'
-      ? 25
-      : revisionStatus === 'warning'
-        ? 10
-        : 0,
+      oilRemainingKm,
+      revisionRemainingKm,
+      tireRemainingKm,
 
-    tireStatus === 'danger'
-      ? 20
-      : tireStatus === 'warning'
-        ? 8
-        : 0,
-  ];
+      monthlyFuelCost,
+    });
 
-  const healthScore = Math.max(
-    0,
-    100 -
-      problems.reduce(
-        (total, item) => total + item,
-        0
-      )
-  );
+  const healthScore = vehicleScore.score;
 
   const mainStatus =
-    healthScore >= 85
-      ? 'Veículo saudável'
-      : healthScore >= 70
-        ? 'Atenção leve no veículo'
-        : 'Revisão recomendada';
+    vehicleScore.status === 'excellent'
+      ? 'Veículo em excelente estado'
+      : vehicleScore.status === 'good'
+        ? 'Veículo saudável'
+        : vehicleScore.status === 'warning'
+          ? 'Atenção leve no veículo'
+          : 'Revisão recomendada';
 
   const mainMessage =
-    healthScore >= 85
-      ? 'Nenhum alerta crítico encontrado nos dados atuais.'
-      : healthScore >= 70
-        ? 'Existem pontos de manutenção chegando perto do limite.'
-        : 'Alguns itens passaram do limite recomendado de manutenção.';
+    vehicleScore.status === 'excellent'
+      ? 'Os dados indicam ótimo desempenho e manutenção em dia.'
+      : vehicleScore.status === 'good'
+        ? 'Nenhum alerta crítico encontrado nos dados atuais.'
+        : vehicleScore.status === 'warning'
+          ? 'Existem pontos de manutenção chegando perto do limite.'
+          : 'Alguns itens passaram do limite recomendado de manutenção.';
 
   const modelName =
     vehicle?.model ||
@@ -172,6 +143,14 @@ export default function Home() {
 
   const fuelCostText =
     formatCurrency(monthlyFuelCost);
+
+  const generalStatus: StatusType =
+    vehicleScore.status === 'excellent' ||
+    vehicleScore.status === 'good'
+      ? 'ok'
+      : vehicleScore.status === 'warning'
+        ? 'warning'
+        : 'danger';
 
   return (
     <section>
@@ -220,9 +199,9 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <span
               className={`h-3 w-3 rounded-full ${
-                healthScore >= 85
+                generalStatus === 'ok'
                   ? 'bg-emerald-400 shadow-emerald-400/40'
-                  : healthScore >= 70
+                  : generalStatus === 'warning'
                     ? 'bg-yellow-400 shadow-yellow-400/40'
                     : 'bg-red-400 shadow-red-400/40'
               } shadow-lg`}
@@ -241,7 +220,7 @@ export default function Home() {
 
           <div className="mt-5">
             <div className="mb-2 flex justify-between text-sm text-blue-100">
-              <span>Score de saúde</span>
+              <span>Score inteligente</span>
 
               <strong className="text-white">
                 {healthScore}%
@@ -270,7 +249,6 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 px-5 py-6 items-start">
-
         <Reveal delay={0.1}>
           <StatusCard
             title="Combustível"
@@ -335,22 +313,10 @@ export default function Home() {
         <Reveal delay={0.6}>
           <StatusCard
             title="Status geral"
-            value={
-              healthScore >= 85
-                ? 'Bom'
-                : healthScore >= 70
-                  ? 'Atenção'
-                  : 'Crítico'
-            }
-            description="Baseado nos dados cadastrados."
+            value={vehicleScore.label}
+            description="Baseado em manutenção, consumo e dados Ford."
             icon={ShieldCheck}
-            status={
-              healthScore >= 85
-                ? 'ok'
-                : healthScore >= 70
-                  ? 'warning'
-                  : 'danger'
-            }
+            status={generalStatus}
           />
         </Reveal>
 
@@ -358,20 +324,30 @@ export default function Home() {
           delay={0.7}
           className="col-span-2"
         >
-          <Reveal
-  delay={0.7}
-  className="col-span-2"
->
-  <AIAssistant
-    healthScore={healthScore}
-    fuelCost={monthlyFuelCost}
-    oilRemainingKm={oilRemainingKm}
-    revisionRemainingKm={revisionRemainingKm}
-  />
-</Reveal>
-          <HealthChart />
+          <FordInsightsCard
+            modelName={modelName}
+            userConsumption={averageConsumption}
+          />
         </Reveal>
 
+        <Reveal
+          delay={0.8}
+          className="col-span-2"
+        >
+          <AIAssistant
+            healthScore={healthScore}
+            fuelCost={monthlyFuelCost}
+            oilRemainingKm={oilRemainingKm}
+            revisionRemainingKm={revisionRemainingKm}
+          />
+        </Reveal>
+
+        <Reveal
+          delay={0.9}
+          className="col-span-2"
+        >
+          <HealthChart />
+        </Reveal>
       </div>
     </section>
   );
