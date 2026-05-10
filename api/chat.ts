@@ -1,207 +1,123 @@
-import type {
-  VercelRequest,
-  VercelResponse,
-} from '@vercel/node';
-
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Groq from 'groq-sdk';
 
 const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.REACT_APP_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true,
 });
 
-const fordRangerSpecs = {
-  modeloBase: 'Ford Ranger 26MY',
-  versoes: [
-    'XLT 3.0L V6 AT 26MY',
-    'Limited 3.0L V6 26MY',
-    'Limited + 3.0L V6 26MY',
-  ],
-
-  motorTransmissao: {
+const fordKnowledgeBase = {
+  ranger: {
+    nome: 'Ford Ranger 26MY',
     motor: '3.0 V6 Diesel Turbo',
     potencia: '250 cv',
     torque: '600 Nm',
     cambio: 'Automático de 10 marchas',
-    combustivel: 'Diesel',
     consumoMedio: '9,55 km/L',
-    eShifter: 'Sim',
-    tecnologiaTurbo: 'Sim',
-  },
-
-  rodasPneus: {
-    xlt: 'Rodas de liga leve 17 polegadas',
-    limited: 'Rodas de liga leve 18 polegadas',
-    limitedPlus: 'Rodas de liga leve 20 polegadas',
-    estepe: 'Estepe full size',
-    pneusATR: 'Disponível nas versões XLT e Limited',
-  },
-
-  conectividade: {
-    fordPassConnect: [
-      'Travamento e destravamento remoto das portas',
-      'Partida remota',
-      'Localização do veículo',
-      'Status do veículo',
-      'Alertas de saúde do veículo',
-      'Loja de aplicativos',
+    tecnologias: [
+      'AEB',
+      'TPMS nas versões Limited e Limited+',
+      'FordPass Connect',
+      'Câmera 360° em versões superiores',
+      'Piloto adaptativo Stop & Go na Limited+',
+      'Terrain Management System',
+      'Tração integral',
     ],
-    bluetooth: 'Sim',
-    androidAutoCarPlay: 'Com cabo e wireless',
-    usb: '4 entradas USB',
-    carregamentoWireless: 'Sim',
-    assistenciaEmergencia: 'Sim',
-    multimidia: {
-      xlt: 'Tela multimídia de 10 polegadas',
-      limited: 'Tela multimídia de 12 polegadas',
-      limitedPlus: 'Tela multimídia de 12 polegadas',
-    },
-    painelInstrumentos: {
-      xlt: 'Tela colorida de 8 polegadas',
-      limited: 'Tela colorida de 8 polegadas',
-      limitedPlus: 'Tela colorida de 12,4 polegadas',
-    },
   },
 
-  seguranca: {
-    airbags: '7 airbags',
-    controleAntiCapotamento: 'Sim',
-    controleDescida: 'Sim',
-    controleAdaptativoCarga: 'Sim',
-    controleReboque: 'Sim',
-    freioAutomaticoPosImpacto: 'Sim',
-    absOffRoad: 'Não informado como disponível',
-    tpms: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
-    aeb: 'Frenagem autônoma de emergência disponível nas três versões',
-    alertaColisaoFrontal: 'Sim',
-    limitadorVelocidade: 'Sim',
-    sensoresEstacionamento: 'Dianteiro e traseiro',
-    sensorChuva: 'Sim',
-    farolAutomatico: 'Sim',
-    freioMaoEletronico: 'Sim',
-    reconhecimentoSinaisTransito: 'Sim',
+  territory: {
+    nome: 'Ford Territory',
+    categoria: 'SUV médio',
+    foco: 'conforto, tecnologia, conectividade e uso urbano/familiar',
+    tecnologias: [
+      'central multimídia',
+      'assistências ao condutor',
+      'conectividade',
+      'recursos de conforto',
+    ],
   },
 
-  assistenciasConducao: {
-    pilotoAutomatico: {
-      xlt: 'Sim',
-      limited: 'Sim',
-      limitedPlus: 'Não na forma simples, pois usa pacote mais avançado',
-    },
-    permanenciaFaixa: {
-      xlt: 'Sim',
-      limited: 'Sim',
-      limitedPlus: 'Não listado no pacote simples',
-    },
-    centralizacaoFaixa: {
-      xlt: 'Não',
-      limited: 'Não',
-      limitedPlus: 'Sim',
-    },
-    pilotoAdaptativoStopGo: {
-      xlt: 'Não',
-      limited: 'Não',
-      limitedPlus: 'Sim',
-    },
-    blisTrafegoCruzado: {
-      xlt: 'Não',
-      limited: 'Não',
-      limitedPlus: 'Sim',
-    },
-    reverseAEB: {
-      xlt: 'Não',
-      limited: 'Não',
-      limitedPlus: 'Sim',
-    },
-    assistenciaDirecaoDefensiva: {
-      xlt: 'Não',
-      limited: 'Não',
-      limitedPlus: 'Sim',
-    },
+  maverick: {
+    nome: 'Ford Maverick',
+    categoria: 'picape urbana',
+    foco: 'uso misto, cidade, estrada e versatilidade',
+    tecnologias: [
+      'caçamba funcional',
+      'assistências ao condutor',
+      'boa proposta de uso urbano',
+    ],
   },
 
-  confortoAcabamento: {
-    bancosCouro: 'Sim',
-    volanteCouro: 'Sim',
-    manoplaCouro: 'Sim',
-    painelSoftTouch: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
-    bancoEletrico: '8 posições',
-    arCondicionado: {
-      xlt: 'Com saída para segunda fileira',
-      limited: 'Automático digital de duas zonas',
-      limitedPlus: 'Automático digital de duas zonas',
-    },
-    keylessStart: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
+  broncoSport: {
+    nome: 'Ford Bronco Sport',
+    categoria: 'SUV aventureiro',
+    foco: 'off-road leve, aventura e tecnologia embarcada',
+    tecnologias: [
+      'modos de condução',
+      'tração inteligente',
+      'recursos off-road',
+    ],
   },
 
-  iluminacao: {
-    faroisFullLED: 'Sim',
-    luzDiurnaLED: 'Sim',
-    farolAltoAutomatico: 'Sim',
-    ajusteAlturaFarois: 'Sim',
-    setaRetrovisor: 'Sim',
-    lanternaLEDParcial: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
+  f150: {
+    nome: 'Ford F-150',
+    categoria: 'picape grande',
+    foco: 'força, carga, reboque e desempenho',
+    tecnologias: [
+      'motor de alta performance',
+      'capacidade de reboque',
+      'tecnologias de assistência',
+    ],
   },
 
-  offRoadCarga: {
-    tracao: 'AWD / tração integral nas três versões',
-    diferencialTraseiroBlocante: 'Sim',
-    terrainManagementSystem:
-      'Sim, com modos como Auto, Sand, Snow, Mud e Rock',
-    estriboLateral: 'Sim',
-    protetorCacamba: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
-    boxRails: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
-    santoAntonio: {
-      xlt: 'Não',
-      limited: 'Sim',
-      limitedPlus: 'Sim',
-    },
-    engateReboque: '3.500 kg',
-    ganchosReboque: {
-      xlt: '1',
-      limited: '2',
-      limitedPlus: '2',
-    },
-    protetorCarter: 'Sim',
-    protetorTanqueCombustivel: 'Sim',
-    bussolaInclinometros: 'Sim',
+  transit: {
+    nome: 'Ford Transit',
+    categoria: 'veículo comercial',
+    foco: 'transporte, carga, operação profissional e frota',
+    tecnologias: [
+      'controle operacional',
+      'conectividade',
+      'uso comercial',
+    ],
   },
 
-  garantiaOutros: {
-    garantia: '5 anos',
-    cabineDupla: 'Sim',
-    monitorVidaUtilOleo: 'Sim',
-    assistenteTampaCacamba: 'Sim',
-    travamentoEletricoCacamba: 'Sim',
-    degrauAcessoCacamba: 'Sim',
-    tomada12v: 'Sim',
-    tapeteBorracha: 'Sim',
-    preparacaoReboque: 'Sim',
+  ecosport: {
+    nome: 'Ford EcoSport',
+    categoria: 'SUV compacto',
+    foco: 'uso urbano, praticidade e manutenção acessível',
+    tecnologias: [
+      'posição elevada de dirigir',
+      'multimídia em versões equipadas',
+      'boa proposta urbana',
+    ],
+  },
+
+  ka: {
+    nome: 'Ford Ka',
+    categoria: 'hatch/sedan compacto',
+    foco: 'economia, cidade e manutenção simples',
+    tecnologias: [
+      'baixo custo de uso',
+      'praticidade urbana',
+      'consumo eficiente',
+    ],
   },
 };
+
+function detectFordModel(model?: string) {
+  const text = model?.toLowerCase() || '';
+
+  if (text.includes('ranger')) return fordKnowledgeBase.ranger;
+  if (text.includes('territory')) return fordKnowledgeBase.territory;
+  if (text.includes('maverick')) return fordKnowledgeBase.maverick;
+  if (text.includes('bronco')) return fordKnowledgeBase.broncoSport;
+  if (text.includes('f-150') || text.includes('f150')) return fordKnowledgeBase.f150;
+  if (text.includes('transit')) return fordKnowledgeBase.transit;
+  if (text.includes('ecosport')) return fordKnowledgeBase.ecosport;
+  if (text.includes('ka')) return fordKnowledgeBase.ka;
+
+  return null;
+}
 
 export default async function handler(
   req: VercelRequest,
@@ -214,47 +130,50 @@ export default async function handler(
   }
 
   try {
-    const {
-      message,
-      vehicle,
-      fuelHistory,
-    } = req.body as {
+    const { message, vehicle, fuelHistory } = req.body as {
       message: string;
-      vehicle: unknown;
+      vehicle?: {
+        model?: string;
+      };
       fuelHistory: unknown;
     };
 
-    const completion =
-      await client.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+    const detectedModel = detectFordModel(vehicle?.model);
 
-        messages: [
-          {
-            role: 'system',
-            content: `
+    const completion = await client.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+
+      messages: [
+        {
+          role: 'system',
+          content: `
 Você é o AutoPulse AI, um copiloto automotivo inteligente da Ford.
 
 Responda em português do Brasil.
 Use linguagem moderna, natural, objetiva e fácil de entender.
 
 Você pode ajudar com:
-- especificações técnicas da Ford Ranger 26MY
-- comparação entre versões XLT, Limited e Limited+
+- especificações técnicas
+- tecnologias Ford
 - manutenção
 - consumo
 - custos
 - viagens
-- tecnologias Ford
-- direção
-- dúvidas gerais do usuário
+- modos de condução
+- dúvidas gerais sobre carros
 
-Use os dados do veículo do usuário quando fizer sentido.
-Use a base técnica Ford abaixo quando perguntarem sobre especificações, tecnologia, segurança, motor, versões, conforto, off-road, conectividade ou equipamentos.
+IMPORTANTE:
+- Se o usuário perguntar sobre Ford Ranger, use a base técnica detalhada.
+- Se perguntar sobre outro Ford, use a base geral abaixo.
+- Se não houver especificação exata na base, diga claramente: "não tenho esse dado oficial na base do app", mas ainda ajude com uma explicação geral.
+- Não invente potência, torque, consumo ou equipamentos como se fossem oficiais.
+- Sempre que fizer sentido, use os dados cadastrados pelo usuário.
 
-Não invente dado técnico. Se uma informação não estiver na base, diga que ela não aparece na base fornecida.
+Base geral Ford:
+${JSON.stringify(fordKnowledgeBase, null, 2)}
 
-Base técnica Ford:
-${JSON.stringify(fordRangerSpecs, null, 2)}
+Modelo detectado pelo cadastro:
+${JSON.stringify(detectedModel, null, 2)}
 
 Dados cadastrados pelo usuário:
 ${JSON.stringify(vehicle, null, 2)}
@@ -262,18 +181,16 @@ ${JSON.stringify(vehicle, null, 2)}
 Histórico de abastecimento:
 ${JSON.stringify(fuelHistory, null, 2)}
 `,
-          },
-
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
-      });
+        },
+        {
+          role: 'user',
+          content: message,
+        },
+      ],
+    });
 
     return res.status(200).json({
-      response:
-        completion.choices[0].message.content,
+      response: completion.choices[0].message.content,
     });
   } catch (error: unknown) {
     console.error(error);
