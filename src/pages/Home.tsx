@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 import {
   Bell,
-  ChevronDown,
+  CarFront,
   Fuel,
   Gauge,
   ShieldCheck,
@@ -163,16 +163,19 @@ export default function Home() {
 
         <div className="relative z-10 mb-8 flex items-center justify-between">
           <button className="rounded-full border border-white/10 bg-white/10 p-3 text-[#0A84FF] backdrop-blur">
-            <ChevronDown size={26} />
+            <CarFront size={26} />
           </button>
 
           <h1 className="text-lg font-bold tracking-wide">
             AutoPulse
           </h1>
 
-          <button className="rounded-full border border-white/10 bg-white/10 p-3 backdrop-blur">
+          <Link
+              to="/alerts"
+                className="rounded-full border border-white/10 bg-white/10 p-3 backdrop-blur"
+                >
             <Bell size={22} />
-          </button>
+</Link>
         </div>
 
         <div className="relative z-10">
