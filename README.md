@@ -105,6 +105,6 @@ A aplicação foi organizada de forma modular, separando páginas, componentes, 
 
 ▶️ Assistir demonstração do projeto
 
-(COLE_O_LINK_DO_VIDEO_AQUI)
+https://www.youtube.com/watch?v=YNsp_7bQ7BA
 
 ---
