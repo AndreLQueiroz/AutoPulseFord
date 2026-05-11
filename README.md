@@ -110,15 +110,3 @@ A aplicação foi organizada de forma modular, separando páginas, componentes, 
 (COLE_O_LINK_DO_VIDEO_AQUI)
 
 ---
-
-# 📂 Estrutura recomendada para as imagens
-
-```bash
-assets/
- └── readme/
-      ├── Home.png
-      ├── Drive.png
-      ├── Assistente.png
-      ├── Gastos.png
-      └── Alertas.png
-```
