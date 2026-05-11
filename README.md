@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# 🔵 AutoPulse Ford
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚗 Sobre o Projeto
 
-Currently, two official plugins are available:
+O **AutoPulse Ford** é uma plataforma desenvolvida para transformar a experiência digital dos clientes Ford através de monitoramento inteligente, análise automotiva e integração de serviços conectados.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+A aplicação centraliza informações importantes do veículo, acompanhamento de saúde automotiva, alertas inteligentes, histórico de gastos, comparativos de mercado e assistência virtual especializada em veículos Ford.
 
-## React Compiler
+## 🎯 Desafio Escolhido
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+O grupo escolheu o desafio relacionado à **experiência digital automotiva conectada**, pois identificou uma oportunidade de aproximar o usuário do ecossistema Ford utilizando tecnologia, dados e inteligência artificial.
 
-## Expanding the ESLint configuration
+A solução faz sentido como aplicação mobile/web porque o motorista precisa consultar informações do veículo de forma rápida, prática e acessível.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ✨ Funcionalidades Implementadas
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Monitoramento de saúde do veículo
+- Diagnóstico preventivo
+- Sistema de alertas inteligentes
+- Registro de abastecimentos
+- Histórico de despesas automotivas
+- Assistente virtual Ford
+- Comparativo entre modelos Ford e concorrentes
+- Interface moderna e responsiva
+- Navegação entre páginas por rotas
+- Experiência digital conectada ao ecossistema Ford
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 👨‍💻 Integrantes do Grupo
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Nome | RM |
+|---|---|
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| André Luiz Queiroz | RM554503 |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Paulo Poças | RM556080 |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Rafael Bocchi | RM557603 |
+
+| Rafael Oliveira | RM554736 |
+
+| Marcys Vinicius | RM555490 |
+
+
+
+## 🛠️ Tecnologias Utilizadas
+
+- React
+- TypeScript
+- React Router
+- Tailwind CSS
+- Lucide React
+- Vite
+- IA
+- Git/GitHub
+
+## 🧠 Decisões Técnicas
+
+### Stack escolhida
+
+O projeto utiliza **React com TypeScript**, pois essa combinação permite criar uma aplicação moderna, componentizada, escalável e com maior segurança no desenvolvimento.
+
+O **Vite** foi escolhido por oferecer inicialização rápida, melhor experiência de desenvolvimento e configuração simples.
+
+O **React Router** foi utilizado para organizar a navegação entre as páginas da aplicação.
+
+O **Tailwind CSS** foi utilizado para acelerar a estilização da interface, mantendo consistência visual e responsividade.
+
+### Estrutura do projeto
+
+A aplicação foi organizada de forma modular, separando páginas, componentes, rotas e recursos visuais.
+
+```bash
+src/
+ ├── components/
+ ├── pages/
+ ├── services/
+ ├── routes/
+ ├── assets/
+ └── styles/
