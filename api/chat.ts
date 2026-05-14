@@ -2,19 +2,18 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Groq from 'groq-sdk';
 
 const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.REACT_APP_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true,
 });
 
 const fordKnowledgeBase = {
   ranger: {
     nome: 'Ford Ranger 26MY',
-    categoria: 'picape média',
     motor: '3.0 V6 Diesel Turbo',
     potencia: '250 cv',
     torque: '600 Nm',
     cambio: 'Automático de 10 marchas',
     consumoMedio: '9,55 km/L',
-    foco: 'força, tecnologia, uso misto, estrada, trabalho e aventura',
     tecnologias: [
       'AEB',
       'TPMS nas versões Limited e Limited+',
@@ -41,7 +40,7 @@ const fordKnowledgeBase = {
   maverick: {
     nome: 'Ford Maverick',
     categoria: 'picape urbana',
-    foco: 'cidade, estrada, versatilidade e uso misto',
+    foco: 'uso misto, cidade, estrada e versatilidade',
     tecnologias: [
       'caçamba funcional',
       'assistências ao condutor',
@@ -52,7 +51,7 @@ const fordKnowledgeBase = {
   broncoSport: {
     nome: 'Ford Bronco Sport',
     categoria: 'SUV aventureiro',
-    foco: 'aventura, off-road leve e tecnologia embarcada',
+    foco: 'off-road leve, aventura e tecnologia embarcada',
     tecnologias: [
       'modos de condução',
       'tração inteligente',
@@ -105,87 +104,19 @@ const fordKnowledgeBase = {
   },
 };
 
-const modelAliases: Record<string, keyof typeof fordKnowledgeBase> = {
-  ranger: 'ranger',
-  'ford ranger': 'ranger',
-  territory: 'territory',
-  'ford territory': 'territory',
-  maverick: 'maverick',
-  'ford maverick': 'maverick',
-  bronco: 'broncoSport',
-  'bronco sport': 'broncoSport',
-  'ford bronco': 'broncoSport',
-  f150: 'f150',
-  'f-150': 'f150',
-  'ford f150': 'f150',
-  'ford f-150': 'f150',
-  transit: 'transit',
-  'ford transit': 'transit',
-  ecosport: 'ecosport',
-  'eco sport': 'ecosport',
-  'ford ecosport': 'ecosport',
-  ka: 'ka',
-  'ford ka': 'ka',
-};
+function detectFordModel(model?: string) {
+  const text = model?.toLowerCase() || '';
 
-function normalizeText(text?: string) {
-  return text
-    ?.toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim() || '';
-}
-
-function detectFordModel(model?: string, message?: string) {
-  const fullText = normalizeText(`${model || ''} ${message || ''}`);
-
-  for (const alias of Object.keys(modelAliases)) {
-    if (fullText.includes(alias)) {
-      return fordKnowledgeBase[modelAliases[alias]];
-    }
-  }
+  if (text.includes('ranger')) return fordKnowledgeBase.ranger;
+  if (text.includes('territory')) return fordKnowledgeBase.territory;
+  if (text.includes('maverick')) return fordKnowledgeBase.maverick;
+  if (text.includes('bronco')) return fordKnowledgeBase.broncoSport;
+  if (text.includes('f-150') || text.includes('f150')) return fordKnowledgeBase.f150;
+  if (text.includes('transit')) return fordKnowledgeBase.transit;
+  if (text.includes('ecosport')) return fordKnowledgeBase.ecosport;
+  if (text.includes('ka')) return fordKnowledgeBase.ka;
 
   return null;
-}
-
-function detectIntent(message: string) {
-  const text = normalizeText(message);
-
-  if (text.includes('consumo') || text.includes('km/l') || text.includes('gasolina') || text.includes('diesel')) {
-    return 'consumo';
-  }
-
-  if (text.includes('manutencao') || text.includes('revisao') || text.includes('oleo') || text.includes('pneu')) {
-    return 'manutencao';
-  }
-
-  if (text.includes('comparar') || text.includes('melhor') || text.includes('hilux') || text.includes('s10') || text.includes('ram')) {
-    return 'comparacao';
-  }
-
-  if (text.includes('viagem') || text.includes('estrada') || text.includes('autonomia') || text.includes('rota')) {
-    return 'viagem';
-  }
-
-  if (text.includes('problema') || text.includes('erro') || text.includes('barulho') || text.includes('falha')) {
-    return 'diagnostico';
-  }
-
-  return 'geral';
-}
-
-function buildFuelSummary(fuelHistory: any) {
-  if (!Array.isArray(fuelHistory) || fuelHistory.length === 0) {
-    return 'Nenhum histórico de abastecimento cadastrado.';
-  }
-
-  const last = fuelHistory[fuelHistory.length - 1];
-
-  return `
-Quantidade de abastecimentos cadastrados: ${fuelHistory.length}
-Último abastecimento:
-${JSON.stringify(last, null, 2)}
-`;
 }
 
 export default async function handler(
@@ -199,110 +130,58 @@ export default async function handler(
   }
 
   try {
-    const {
-      message,
-      vehicle,
-      fuelHistory,
-      history = [],
-    } = req.body as {
+    const { message, vehicle, fuelHistory } = req.body as {
       message: string;
       vehicle?: {
         model?: string;
-        year?: string;
-        version?: string;
-        mileage?: number;
       };
-      fuelHistory?: unknown;
-      history?: Array<{
-        role: 'user' | 'assistant';
-        content: string;
-      }>;
+      fuelHistory: unknown;
     };
 
-    if (!message || typeof message !== 'string') {
-      return res.status(400).json({
-        error: 'Mensagem inválida.',
-      });
-    }
-
-    const detectedModel = detectFordModel(vehicle?.model, message);
-    const intent = detectIntent(message);
-    const fuelSummary = buildFuelSummary(fuelHistory);
-
-    const safeHistory = history
-      .filter((item) => item.role === 'user' || item.role === 'assistant')
-      .slice(-8);
+    const detectedModel = detectFordModel(vehicle?.model);
 
     const completion = await client.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.45,
-      max_tokens: 900,
 
       messages: [
         {
           role: 'system',
           content: `
-Você é o AutoPulse AI, um copiloto automotivo inteligente especializado em veículos Ford.
+Você é o AutoPulse AI, um copiloto automotivo inteligente da Ford.
 
-Sua função é agir como uma IA automotiva premium dentro de um app Ford.
+Responda em português do Brasil.
+Use linguagem moderna, natural, objetiva e fácil de entender.
 
-ESTILO DE RESPOSTA:
-- Responda sempre em português do Brasil.
-- Seja natural, direto e útil.
-- Fale como um consultor automotivo inteligente, não como um chatbot genérico.
-- Use frases curtas e objetivas.
-- Quando possível, dê recomendações práticas.
-- Não exagere no texto.
-- Não use linguagem robótica.
-- Não invente dados técnicos oficiais.
+Você pode ajudar com:
+- especificações técnicas
+- tecnologias Ford
+- manutenção
+- consumo
+- custos
+- viagens
+- modos de condução
+- dúvidas gerais sobre carros
 
-PERSONALIDADE:
-- Inteligente
-- Confiável
-- Estratégico
-- Automotivo
-- Prático
-- Moderno
+IMPORTANTE:
+- Se o usuário perguntar sobre Ford Ranger, use a base técnica detalhada.
+- Se perguntar sobre outro Ford, use a base geral abaixo.
+- Se não houver especificação exata na base, diga claramente: "não tenho esse dado oficial na base do app", mas ainda ajude com uma explicação geral.
+- Não invente potência, torque, consumo ou equipamentos como se fossem oficiais.
+- Sempre que fizer sentido, use os dados cadastrados pelo usuário.
 
-REGRAS IMPORTANTES:
-1. Nunca invente potência, torque, preço, consumo, versões ou equipamentos como se fossem oficiais.
-2. Se não houver dado oficial na base do app, diga: "não tenho esse dado oficial na base do app".
-3. Mesmo sem dado oficial, ajude com uma explicação geral.
-4. Use os dados do veículo cadastrado quando existirem.
-5. Use o histórico de abastecimento quando a pergunta envolver consumo, autonomia ou custo.
-6. Se a pergunta envolver diagnóstico de problema, oriente de forma preventiva e recomende avaliação profissional quando necessário.
-7. Se o usuário pedir comparação, destaque vantagens e limitações com equilíbrio.
-8. Se a pergunta for vaga, responda com a melhor hipótese e sugira uma próxima ação.
-9. Não diga que é um modelo de linguagem.
-10. Não fale de marcas concorrentes com dados inventados.
-
-TIPOS DE RESPOSTA:
-- Para consumo: explique consumo médio, possíveis causas de variação e dicas práticas.
-- Para manutenção: explique riscos, prioridade e próximos cuidados.
-- Para viagem: analise autonomia, conforto, segurança e preparo.
-- Para comparação: compare por proposta de uso, não apenas por números.
-- Para tecnologia: explique o recurso de forma simples e aplicada ao motorista.
-- Para diagnóstico: organize em possíveis causas, nível de urgência e recomendação.
-
-INTENÇÃO DETECTADA:
-${intent}
-
-BASE FORD DISPONÍVEL:
+Base geral Ford:
 ${JSON.stringify(fordKnowledgeBase, null, 2)}
 
-MODELO DETECTADO:
+Modelo detectado pelo cadastro:
 ${JSON.stringify(detectedModel, null, 2)}
 
-VEÍCULO CADASTRADO PELO USUÁRIO:
+Dados cadastrados pelo usuário:
 ${JSON.stringify(vehicle, null, 2)}
 
-RESUMO DO HISTÓRICO DE ABASTECIMENTO:
-${fuelSummary}
+Histórico de abastecimento:
+${JSON.stringify(fuelHistory, null, 2)}
 `,
         },
-
-        ...safeHistory,
-
         {
           role: 'user',
           content: message,
@@ -311,11 +190,7 @@ ${fuelSummary}
     });
 
     return res.status(200).json({
-      response:
-        completion.choices[0].message.content ||
-        'Não consegui gerar uma resposta agora.',
-      detectedModel,
-      intent,
+      response: completion.choices[0].message.content,
     });
   } catch (error: unknown) {
     console.error(error);
@@ -324,7 +199,7 @@ ${fuelSummary}
       error:
         error instanceof Error
           ? error.message
-          : 'Erro ao processar a resposta da IA.',
+          : 'Erro Groq',
     });
   }
 }
